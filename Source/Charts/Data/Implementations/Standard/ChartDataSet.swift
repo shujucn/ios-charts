@@ -10,26 +10,6 @@
 //
 
 import Foundation
-fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l < r
-  case (nil, _?):
-    return true
-  default:
-    return false
-  }
-}
-
-fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l > r
-  default:
-    return rhs < lhs
-  }
-}
-
 
 /// Determines how to round DataSet index values for `ChartDataSet.entryIndex(x, rounding)` when an exact x-value is not found.
 @objc
@@ -298,16 +278,36 @@ open class ChartDataSet: ChartBaseDataSet
         {
             let m = (low + high) / 2
             
-            let d1 = abs(_values[m].x - xValue)
-            let d2 = abs(_values[m + 1].x - xValue)
+            let d1 = _values[m].x - xValue
+            let d2 = _values[m + 1].x - xValue
+            let ad1 = abs(d1), ad2 = abs(d2)
             
-            if d2 <= d1
+            if ad2 < ad1
             {
+                // [m + 1] is closer to xValue
+                // Search in an higher place
                 low = m + 1
+            }
+            else if ad1 < ad2
+            {
+                // [m] is closer to xValue
+                // Search in a lower place
+                high = m
             }
             else
             {
-                high = m
+                // We have multiple sequential x-value with same distance
+                
+                if d1 >= 0.0
+                {
+                    // Search in a lower place
+                    high = m
+                }
+                else if d1 < 0.0
+                {
+                    // Search in an higher place
+                    low = m + 1
+                }
             }
         }
         
@@ -382,7 +382,7 @@ open class ChartDataSet: ChartBaseDataSet
         
         calcMinMax(entry: e)
         
-        if _values.last?.x > e.x
+        if _values.count > 0 && _values.last!.x > e.x
         {
             var closestIndex = entryIndex(x: e.x, rounding: .up)
             while _values[closestIndex].x < e.x

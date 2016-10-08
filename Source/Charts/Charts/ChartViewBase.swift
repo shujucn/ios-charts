@@ -15,26 +15,6 @@ import CoreGraphics
 
 #if !os(OSX)
     import UIKit
-fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l < r
-  case (nil, _?):
-    return true
-  default:
-    return false
-  }
-}
-
-fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l > r
-  default:
-    return rhs < lhs
-  }
-}
-
 #endif
 
 @objc
@@ -409,7 +389,7 @@ open class ChartViewBase: NSUIView, ChartDataProvider, AnimatorDelegate
             let description = chartDescription,
             description.isEnabled,
             let descriptionText = description.text,
-            descriptionText.lengthOfBytes(using: String.Encoding.utf16) > 0
+            descriptionText.characters.count > 0
             else { return }
         
         var position = description.position
@@ -908,16 +888,6 @@ open class ChartViewBase: NSUIView, ChartDataProvider, AnimatorDelegate
         
 		return true
     }
-    
-    #if !os(tvOS) && !os(OSX)
-    /// Saves the current state of the chart to the camera roll
-    open func saveToCameraRoll()
-    {
-		if let img = getChartImage(transparent: false) {
-			UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
-		}
-    }
-    #endif
     
     internal var _viewportJobs = [ViewPortJob]()
     

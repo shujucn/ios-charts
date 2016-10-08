@@ -44,12 +44,18 @@ open class ChartUtils
     
     internal class func decimals(_ number: Double) -> Int
     {
-        if number == 0.0
+        if number.isNaN || number.isInfinite || number == 0.0
         {
             return 0
         }
         
         let i = roundToNextSignificant(number: Double(number))
+        
+        if i.isInfinite
+        {
+            return 0
+        }
+        
         return Int(ceil(-log10(i))) + 2
     }
     
